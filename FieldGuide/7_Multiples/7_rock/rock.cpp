@@ -46,11 +46,12 @@ struct game_data
 // contains init_rocks, init_player and new rocks
 
 // new rock, for one rock
+// here can setting the difficulty of the game
 rock_data new_rock(bitmap rock_bmp)
 {
     rock_data rock{};
 
-    rock.ent.size = rnd(10, 100);
+    rock.ent.size = rnd(30, 100);
     rock.ent.pos.x = rnd(0, SCREEN_WIDTH - rock.ent.size);
     rock.ent.pos.y = -rock.ent.size;
     rock.ent.speed = rnd(1, 5);
@@ -75,8 +76,8 @@ player_data new_player(bitmap player_bmp)
     player_data player{};
 
     player.ent.size = 30;
-    player.ent.pos.x = (SCREEN_WIDTH / 2) + player.ent.size / 2; // player at middle
-    player.ent.pos.y = SCREEN_HEIGHT - player.ent.size;          // player at bottom
+    player.ent.pos.x = (SCREEN_WIDTH / 2) - (player.ent.size / 2); // player at middle
+    player.ent.pos.y = SCREEN_HEIGHT - player.ent.size;            // player at bottom
     player.ent.speed = PLAYER_SPEED;
     player.ent.clr = COLOR_BLUE;
     player.ent.bmp = player_bmp;
@@ -100,9 +101,19 @@ void draw_entity(entity &ent)
         return;
     }
 
-    double scale = ent.size / 1024;
+    double bmp_w = bitmap_width(ent.bmp);
+    double bmp_h = bitmap_height(ent.bmp);
 
-    draw_bitmap(ent.bmp, ent.pos.x, ent.pos.y, option_scale_bmp(scale, scale));
+    // scale the bitmap down to the entity size
+    double scale_x = ent.size / bmp_w;
+    double scale_y = ent.size / bmp_h;
+
+    // splashkit scales a bitmap around centre
+    // setting pos stays the top-left corner of the entity.
+    double draw_x = ent.pos.x - (bmp_w - ent.size) / 2;
+    double draw_y = ent.pos.y - (bmp_h - ent.size) / 2;
+
+    draw_bitmap(ent.bmp, draw_x, draw_y, option_scale_bmp(scale_x, scale_y));
 }
 
 // using bitmap
@@ -168,7 +179,20 @@ bool out_of_screen(const entity &ent)
 // check it when collide
 bool entities_collide(const entity &ent1, const entity &ent2)
 {
-    return ent1.enabled && ent2.enabled && circles_intersect(ent1.pos.x, ent1.pos.y, ent1.size, ent2.pos.x, ent2.pos.y, ent2.size);
+    if (!ent1.enabled || !ent2.enabled)
+    {
+        return false;
+    }
+
+    double r1 = ent1.size / 2;
+    double r2 = ent2.size / 2;
+
+    double cx1 = ent1.pos.x + r1;
+    double cy1 = ent1.pos.y + r1;
+    double cx2 = ent2.pos.x + r2;
+    double cy2 = ent2.pos.y + r2;
+
+    return circles_intersect(cx1, cy1, r1, cx2, cy2, r2);
 }
 
 // randomly decide whether to generate a new entity
