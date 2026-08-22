@@ -131,6 +131,10 @@ void draw_game(game_data &game)
         draw_entity(game.rocks[i].ent);
     }
 
+    // draw the remaining lives of player on screen
+    draw_text("Lives: " + to_string(game.lives), COLOR_BLACK, 10, 10);
+    draw_text("Scores: " + to_string(game.score), COLOR_BLACK, 10, 20);
+
     refresh_screen(60);
 }
 
