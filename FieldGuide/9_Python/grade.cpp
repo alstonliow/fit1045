@@ -88,7 +88,7 @@ int main()
 
     // Output the results
     write_line("Average: " + to_string(analyser.average()));
-    write_line("Pass rate: " + to_string(analyser.pass_rate() * 100) + "%");
+    write_line("Pass rate: " + to_string(analyser.pass_rate()) + "%");
     write_line("High distinctions: " + to_string(analyser.num_hd()));
 
     return 0;
