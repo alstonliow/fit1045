@@ -46,7 +46,7 @@ public:
             write_line("Failed to change password - password reuse");
             return false;
         }
-        // password changed
+        // password changed, return true
         else if (old_password_ == password && old_password_ != new_password_)
         {
             password = new_password_;
@@ -61,5 +61,72 @@ public:
 
 int main()
 {
+    user u{};
+
+    int option{};
+
+    while (option != 4)
+    {
+        // print the menu to user
+        write_line("1: Set Account");
+        write_line("2: Test Login");
+        write_line("3: Change Password");
+        write_line("4: Quit");
+
+        // read option from user
+        option = read_integer("Enter your option: ", 1, 4);
+
+        // doing each case with option
+        switch (option)
+        {
+        // Set account
+        case 1:
+            // add {} to crate a new space
+            {
+                // ask username and password
+                string u_name = read_string("Username: ");
+                string u_pass = read_string("Password: ");
+
+                // set account
+                u = user(u_name, u_pass);
+                write_line("Account Set");
+
+                break;
+            }
+        // test login
+        case 2:
+        {
+            // ask username and password
+            string u_name = read_string("Username: ");
+            string u_pass = read_string("Password: ");
+
+            // check whether login successed or failed
+            if (u.test_login(u_name, u_pass))
+            {
+                write_line("Login Successed");
+            }
+            else
+            {
+                write_line("Login Failed");
+            }
+            break;
+        }
+        // change password
+        case 3:
+        {
+            string old_pass = read_string("Enter current password: ");
+            string new_pass = read_string("Enter new password: ");
+
+            u.change_password(old_pass, new_pass);
+
+            break;
+        }
+        case 4:
+            break;
+        default:
+            break;
+        }
+    }
+
     return 0;
 }
