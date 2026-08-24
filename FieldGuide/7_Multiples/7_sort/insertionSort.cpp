@@ -15,11 +15,37 @@ void fill_array(fixed_array<int, DATA_SIZE> &data)
     }
 }
 
-// draw all the bar
-void visuallize_array(const fixed_array<int, DATA_SIZE> &data)
-{
-    const color FILL_COLOR = COLOR_WHITE;
+// determine color of a single bar
+// normal ~ white
+// key ~ red
+// compare bar ~ yellow
 
+// difficult to write because
+// need to think about how the insertion_sort() use it
+// two gap between final use
+
+// index:         the bar currently being drawn (0 .. DATA_SIZE-1)
+// key_index:     the position key will be inserted into this step (i + 1)
+// compare_index: the position currently being compared against key (i)
+color get_color(int index, int key_index, int compare_index)
+{
+    if (index == key_index)
+    {
+        return COLOR_RED;
+    }
+    else if (index == compare_index)
+    {
+        return COLOR_YELLOW;
+    }
+    else
+    {
+        return COLOR_WHITE;
+    }
+}
+
+// draw all the bar
+void visuallize_array(const fixed_array<int, DATA_SIZE> &data, int key_index, int compare_index)
+{
     // Split the window width evenly between the elements.
     double bar_width = (double)screen_width() / DATA_SIZE;
 
@@ -33,7 +59,8 @@ void visuallize_array(const fixed_array<int, DATA_SIZE> &data)
         double x = i * bar_width; // actually (i+1)-1=i, the width of the pass one
         double y = screen_height() - bar_height;
 
-        fill_rectangle(FILL_COLOR, x, y, bar_width, bar_height);
+        // using get_color to determine the color
+        fill_rectangle(get_color(i, key_index, compare_index), x, y, bar_width, bar_height);
     }
 
     refresh_screen();
@@ -52,8 +79,8 @@ void insertion_pass(fixed_array<int, DATA_SIZE> &data, int key_pos)
         data[i + 1] = data[i];
         i = i - 1; // move left to campare with key again
 
-        // visualise
-        visuallize_array(data);
+        // visualise with highlight
+        visuallize_array(data, key_pos, i);
         delay(50);
     }
 

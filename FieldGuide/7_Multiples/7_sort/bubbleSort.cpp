@@ -15,7 +15,6 @@ void fill_array(fixed_array<int, DATA_SIZE> &data)
     }
 }
 
-// use many time
 // determine the color of the bar to highlight the bar
 color get_color(int index, int highlight_index1, int highlight_index2)
 {
