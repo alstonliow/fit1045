@@ -39,7 +39,31 @@ void visuallize_array(const fixed_array<int, DATA_SIZE> &data)
     refresh_screen();
 }
 
-// insertion sort here
+// insertion sort one time
+void insertion_pass(fixed_array<int, DATA_SIZE> &data, int key_pos)
+{
+    int key = data[key_pos]; // current key
+    int i = key_pos - 1;     // last position of sorted data
+
+    while (i >= 0 && data[i] > key)
+    {
+        // all element before the key compare with key
+        // if element > key, then move right
+        data[i + 1] = data[i];
+        i = i - 1; // move left to campare with key again
+    }
+
+    data[i + 1] = key;
+}
+
+// full insertion sort
+void insertion_sort(fixed_array<int, DATA_SIZE> &data)
+{
+    for (int j = 1; j <= DATA_SIZE - 1; j++)
+    {
+        insertion_pass(data, j);
+    }
+}
 
 int main()
 {
