@@ -2,7 +2,7 @@
 #include "splashkit-arrays.h"
 
 // change DATA_SIZE to changing the number of bar
-const int DATA_SIZE = 30;
+const int DATA_SIZE = 20;
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
 
@@ -15,15 +15,22 @@ void fill_array(fixed_array<int, DATA_SIZE> &data)
     }
 }
 
-// draw bar
-void visuallize_array(const fixed_array<int, DATA_SIZE> &data)
+// determine the color of the bar to highlight the bar
+color get_color(int index, int highlight_index1, int highlight_index2)
 {
-    const color FILL_COLOR = COLOR_BLUE;
+    // ternary operator
+    // [expression to test] ? [if true, return this] : [otherwise, return this]
+    // highlight with yellow
+    return (index == highlight_index1 || index == highlight_index2) ? COLOR_YELLOW : COLOR_WHITE;
+}
 
+// draw bar
+void visuallize_array(const fixed_array<int, DATA_SIZE> &data, int highlight_index1, int highlight_index2)
+{
     // Split the window width evenly between the elements.
     double bar_width = (double)screen_width() / DATA_SIZE;
 
-    clear_screen(COLOR_WHITE);
+    clear_screen(COLOR_BLACK);
 
     for (int i = 0; i < length(data); i++)
     {
@@ -33,7 +40,7 @@ void visuallize_array(const fixed_array<int, DATA_SIZE> &data)
         double x = i * bar_width; // actually (i+1)-1=i, the width of the pass one
         double y = screen_height() - bar_height;
 
-        fill_rectangle(FILL_COLOR, x, y, bar_width, bar_height);
+        fill_rectangle(get_color(i, highlight_index1, highlight_index2), x, y, bar_width, bar_height);
     }
 
     refresh_screen();
@@ -57,8 +64,8 @@ void bubble_sort_pass(fixed_array<int, DATA_SIZE> &data, int range)
             data[i] = data[i + 1];
             data[i + 1] = temp;
         }
-        visuallize_array(data);
-        delay(50); // slow things down so the change is visible
+        visuallize_array(data, i, i + 1);
+        delay(100); // slow things down so the change is visible
     }
 }
 
@@ -91,7 +98,8 @@ int main()
     while (!quit_requested())
     {
         process_events();
-        visuallize_array(data);
+        // -1 mean do not highlight anymore
+        visuallize_array(data, -1, -1);
     }
 
     return 0;
