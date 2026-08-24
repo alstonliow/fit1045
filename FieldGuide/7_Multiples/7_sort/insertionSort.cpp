@@ -51,6 +51,10 @@ void insertion_pass(fixed_array<int, DATA_SIZE> &data, int key_pos)
         // if element > key, then move right
         data[i + 1] = data[i];
         i = i - 1; // move left to campare with key again
+
+        // visualise
+        visuallize_array(data);
+        delay(50);
     }
 
     data[i + 1] = key;
@@ -73,11 +77,14 @@ int main()
 
     // must use after open window because screen_height()
     fill_array(data);
+    insertion_sort(data);
+    // data already sorted 100%
 
     while (!quit_requested())
     {
         process_events();
-        visuallize_array(data);
+        // visuallize_array(data);
+        // useless because all animation in insertion_sort()
     }
 
     return 0;
