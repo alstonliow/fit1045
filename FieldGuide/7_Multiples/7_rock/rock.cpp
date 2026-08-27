@@ -11,35 +11,35 @@ const int MAX_ROCK_COUNT = 100;
 
 struct entity
 {
-    bool enabled{true};
-    point_2d pos{};
-    double size{};
-    bitmap bmp{};
-    int speed{};
-    color clr{};
+    bool enabled = true;
+    point_2d pos;
+    double size;
+    bitmap bmp;
+    int speed;
+    color clr;
     // sprite spr{};
 };
 
 // rocks is entity
 struct rock_data
 {
-    entity ent{};
-    bool mark_for_remove{false};
+    entity ent;
+    bool mark_for_remove = false;
 };
 
 // player is entity
 struct player_data
 {
-    entity ent{};
+    entity ent;
 };
 
 struct game_data
 {
-    dynamic_array<rock_data> rocks{};
-    player_data player{};
-    int score{};
-    int lives{3};
-    bitmap background{};
+    dynamic_array<rock_data> rocks;
+    player_data player;
+    int score;
+    int lives = 3;
+    bitmap background;
 };
 
 // initial the game
@@ -49,7 +49,7 @@ struct game_data
 // here can setting the difficulty of the game
 rock_data new_rock(bitmap rock_bmp)
 {
-    rock_data rock{};
+    rock_data rock;
 
     rock.ent.size = rnd(30, 100);
     rock.ent.pos.x = rnd(0, SCREEN_WIDTH - rock.ent.size);
@@ -73,7 +73,7 @@ void init_rocks(dynamic_array<rock_data> &rocks, bitmap rock_bmp)
 // new player data
 player_data new_player(bitmap player_bmp)
 {
-    player_data player{};
+    player_data player;
 
     player.ent.size = 30;
     player.ent.pos.x = (SCREEN_WIDTH / 2) - (player.ent.size / 2); // player at middle
@@ -188,15 +188,15 @@ bool entities_collide(const entity &ent1, const entity &ent2)
         return false;
     }
 
-    double r1 = ent1.size / 2;
-    double r2 = ent2.size / 2;
+    double radius_1 = ent1.size / 2;
+    double radius_2 = ent2.size / 2;
 
-    double cx1 = ent1.pos.x + r1;
-    double cy1 = ent1.pos.y + r1;
-    double cx2 = ent2.pos.x + r2;
-    double cy2 = ent2.pos.y + r2;
+    double circe_x_1 = ent1.pos.x + radius_1;
+    double circle_x_2 = ent1.pos.y + radius_1;
+    double circle_y_1 = ent2.pos.x + radius_2;
+    double circle_y_2 = ent2.pos.y + radius_2;
 
-    return circles_intersect(cx1, cy1, r1, cx2, cy2, r2);
+    return circles_intersect(circe_x_1, circle_x_2, radius_1, circle_y_1, circle_y_2, radius_2);
 }
 
 // randomly decide whether to generate a new entity
@@ -249,7 +249,7 @@ int main()
     bitmap player_bmp = load_bitmap("player", "player.png");
     bitmap rock_bmp = load_bitmap("rock", "rock.png");
 
-    game_data game{};
+    game_data game;
     init_game(game, rock_bmp, player_bmp);
 
     while (!quit_requested() && game.lives > 0)

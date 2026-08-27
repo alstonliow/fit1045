@@ -40,10 +40,10 @@ class grade_analyser:
                 num_hd += 1
         return num_hd
 
-# main 
-analyser = grade_analyser()
-analyser.add_grades()
+if __name__ == "__main__":
+    analyser = grade_analyser()
+    analyser.add_grades()
 
-print(f"Average: {analyser.average()}")
-print(f"Pass rate: {analyser.pass_rate()}%")
-print(f"High distinctions: {analyser.num_hd()}")
+    print(f"Average: {analyser.average()}")
+    print(f"Pass rate: {analyser.pass_rate()}%")
+    print(f"High distinctions: {analyser.num_hd()}")
