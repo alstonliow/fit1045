@@ -2,7 +2,7 @@
 #include "splashkit-arrays.h"
 
 // change DATA_SIZE to changing the number of bar
-const int DATA_SIZE = 20;
+const int DATA_SIZE = 256;
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
 
@@ -18,17 +18,11 @@ void fill_array(fixed_array<int, DATA_SIZE> &data)
 /**
  * Determine the color of a single bar during a merge step.
  *
- *   COLOR_YELLOW -> the bar at position i (left pointer, currently
- *                    being compared)
- *   COLOR_RED    -> the bar at position j (right pointer, currently
- *                    being compared)
- *   COLOR_BLUE   -> a bar inside the left half [left, mid], not
- *                    currently pointed to by i
- *   COLOR_GREEN  -> a bar inside the right half [mid+1, right], not
- *                    currently pointed to by j
- *   COLOR_WHITE  -> a bar outside the current [left, right] range
- *                    (already merged, or not yet reached by this
- *                    recursive call)
+ *   COLOR_YELLOW       -> the bar at position i (left pointer, currently being compared)
+ *   COLOR_RED          -> the bar at position j (right pointer, currently being compared)
+ *   COLOR_AQUA         -> a bar inside the left half [left, mid], not currently pointed to by i
+ *   COLOR_PALE_GREEN   -> a bar inside the right half [mid+1, right], not currently pointed to by j
+ *   COLOR_WHITE        -> a bar outside the current [left, right] range (already merged, or not yet reached by this recursive call)
  *
  * @param index the bar currently being drawn (0 .. DATA_SIZE-1)
  * @param left  start of the range currently being merged
@@ -52,11 +46,11 @@ color get_color(int index, int left, int mid, int right, int i, int j)
     }
     else if (index >= left && index <= mid)
     {
-        return COLOR_BLUE;
+        return COLOR_AQUA;
     }
-    else if (index > mid && index <= right)
+    else if (index >= mid + 1 && index <= right)
     {
-        return COLOR_GREEN;
+        return COLOR_PALE_GREEN;
     }
     else
     {
@@ -83,8 +77,22 @@ void visualise_array(const fixed_array<int, DATA_SIZE> &data, int left, int mid,
     }
 
     refresh_screen();
+    delay(50);
 }
 
+/**
+ * Merge two already-sorted halves [left, mid] and [mid+1, right]
+ * back into a single sorted range [left, right], using two pointers
+ * (i, j) to pick the smaller candidate at each step.
+ *
+ * A final visualise call with -1 indices clears the highlight once
+ * this range is fully merged.
+ *
+ * @param data  the array being sorted (modified in place)
+ * @param left  start of the range being merged
+ * @param mid   boundary between the two halves
+ * @param right end of the range being merged
+ */
 void merge(fixed_array<int, DATA_SIZE> &data, int left, int mid, int right)
 {
     dynamic_array<int> temp;
@@ -103,26 +111,38 @@ void merge(fixed_array<int, DATA_SIZE> &data, int left, int mid, int right)
             add(temp, data[j]);
             j++;
         }
+        visualise_array(data, left, mid, right, i, j);
     }
     // remaining value in i group
     while (i <= mid)
     {
         add(temp, data[i]);
         i++;
+        visualise_array(data, left, mid, right, i, j);
     }
     // remaining value in j group
     while (j <= right)
     {
         add(temp, data[j]);
         j++;
+        visualise_array(data, left, mid, right, i, j);
     }
     for (int k = 0; k < length(temp); k++)
     {
         data[left + k] = temp[k];
     }
+    visualise_array(data, left, mid, right, i, j);
+    visualise_array(data, -1, -1, -1, -1, -1);
 }
 
-// for recursion, three param
+/**
+ * Recursively sort data[left..right] using merge sort: split at
+ * the midpoint, sort each half, then merge them.
+ *
+ * @param data  the array being sorted (modified in place)
+ * @param left  start index of the range to sort
+ * @param right end index of the range to sort
+ */
 void merge_sort(fixed_array<int, DATA_SIZE> &data, int left, int right)
 {
     if (left >= right)
@@ -145,7 +165,15 @@ void merge_sort(fixed_array<int, DATA_SIZE> &data)
 int main()
 {
     open_window("Merge Sort", WINDOW_WIDTH, WINDOW_HEIGHT);
-    fixed_array<int, DATA_SIZE> array;
-    fill_array(array);
+
+    fixed_array<int, DATA_SIZE> data;
+    fill_array(data);
+    merge_sort(data);
+
+    while (!quit_requested())
+    {
+        process_events();
+    }
+
     return 0;
 }
