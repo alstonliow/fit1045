@@ -2,7 +2,7 @@
 #include "splashkit-arrays.h"
 
 // change DATA_SIZE to changing the number of bar
-const int DATA_SIZE = 20;
+const int DATA_SIZE = 30;
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
 
@@ -44,7 +44,7 @@ color get_color(int index, int key_index, int compare_index)
 }
 
 // draw all the bar
-void visuallize_array(const fixed_array<int, DATA_SIZE> &data, int key_index, int compare_index)
+void visualise_array(const fixed_array<int, DATA_SIZE> &data, int key_index, int compare_index)
 {
     // Split the window width evenly between the elements.
     double bar_width = (double)screen_width() / DATA_SIZE;
@@ -80,7 +80,7 @@ void insertion_pass(fixed_array<int, DATA_SIZE> &data, int key_pos)
         i = i - 1; // move left to campare with key again
 
         // visualise with highlight
-        visuallize_array(data, key_pos, i);
+        visualise_array(data, key_pos, i);
         delay(50);
     }
 
@@ -110,7 +110,7 @@ int main()
     while (!quit_requested())
     {
         process_events();
-        // visuallize_array(data);
+        // visualise_array(data);
         // useless because all animation in insertion_sort()
     }
 
