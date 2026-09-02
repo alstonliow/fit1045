@@ -16,7 +16,7 @@ void fill_array(fixed_array<int, DATA_SIZE> &data)
 }
 
 // determine the color of the bar to highlight the bar
-color get_color(int index, int highlight_index1, int highlight_index2)
+color get_bubble_color(int index, int highlight_index1, int highlight_index2)
 {
     // ternary operator
     // [expression to test] ? [if true, return this] : [otherwise, return this]
@@ -25,7 +25,7 @@ color get_color(int index, int highlight_index1, int highlight_index2)
 }
 
 // draw bar
-void visuallize_array(const fixed_array<int, DATA_SIZE> &data, int highlight_index1, int highlight_index2)
+void visualise_bubble(const fixed_array<int, DATA_SIZE> &data, int highlight_index1, int highlight_index2)
 {
     // Split the window width evenly between the elements.
     double bar_width = (double)screen_width() / DATA_SIZE;
@@ -40,7 +40,7 @@ void visuallize_array(const fixed_array<int, DATA_SIZE> &data, int highlight_ind
         double x = i * bar_width; // actually (i+1)-1=i, the width of the pass one
         double y = screen_height() - bar_height;
 
-        fill_rectangle(get_color(i, highlight_index1, highlight_index2), x, y, bar_width, bar_height);
+        fill_rectangle(get_bubble_color(i, highlight_index1, highlight_index2), x, y, bar_width, bar_height);
     }
 
     refresh_screen();
@@ -64,9 +64,9 @@ void bubble_sort_pass(fixed_array<int, DATA_SIZE> &data, int range)
             data[i] = data[i + 1];
             data[i + 1] = temp;
         }
-        // here giving get_color() index1 and index2
+        // here giving get_bubble_color() index1 and index2
         // when swap i and i + 1, highlight two bar
-        visuallize_array(data, i, i + 1);
+        visualise_bubble(data, i, i + 1);
         delay(100); // slow things down so the change is visible
     }
 }
@@ -101,7 +101,7 @@ int main()
     {
         process_events();
         // -1 mean do not highlight anymore
-        visuallize_array(data, -1, -1);
+        visualise_bubble(data, -1, -1);
     }
 
     return 0;

@@ -34,7 +34,7 @@ void fill_array(fixed_array<int, DATA_SIZE> &data)
  * @param j     the right-half pointer used in the merge comparison
  * @return the color this bar should be drawn with
  */
-color get_color(int index, int left, int mid, int right, int i, int j)
+color get_merge_color(int index, int left, int mid, int right, int i, int j)
 {
     if (index == i)
     {
@@ -59,7 +59,7 @@ color get_color(int index, int left, int mid, int right, int i, int j)
 }
 
 // visualise, draw the bar
-void visualise_array(const fixed_array<int, DATA_SIZE> &data, int left, int mid, int right, int i, int j)
+void visualise_merge(const fixed_array<int, DATA_SIZE> &data, int left, int mid, int right, int i, int j)
 {
     double bar_width = (double)screen_width() / length(data);
     clear_screen(COLOR_BLACK);
@@ -72,8 +72,8 @@ void visualise_array(const fixed_array<int, DATA_SIZE> &data, int left, int mid,
         double x = k * bar_width;
         double y = (double)screen_height() - bar_height;
 
-        // using get_color to determine the color
-        fill_rectangle(get_color(k, left, mid, right, i, j), x, y, bar_width, bar_height);
+        // using get_merge_color to determine the color
+        fill_rectangle(get_merge_color(k, left, mid, right, i, j), x, y, bar_width, bar_height);
     }
 
     refresh_screen();
@@ -111,28 +111,28 @@ void merge(fixed_array<int, DATA_SIZE> &data, int left, int mid, int right)
             add(temp, data[j]);
             j++;
         }
-        visualise_array(data, left, mid, right, i, j);
+        visualise_merge(data, left, mid, right, i, j);
     }
     // remaining value in i group
     while (i <= mid)
     {
         add(temp, data[i]);
         i++;
-        visualise_array(data, left, mid, right, i, j);
+        visualise_merge(data, left, mid, right, i, j);
     }
     // remaining value in j group
     while (j <= right)
     {
         add(temp, data[j]);
         j++;
-        visualise_array(data, left, mid, right, i, j);
+        visualise_merge(data, left, mid, right, i, j);
     }
     for (int k = 0; k < length(temp); k++)
     {
         data[left + k] = temp[k];
     }
-    visualise_array(data, left, mid, right, i, j);
-    visualise_array(data, -1, -1, -1, -1, -1);
+    visualise_merge(data, left, mid, right, i, j);
+    visualise_merge(data, -1, -1, -1, -1, -1);
 }
 
 /**
