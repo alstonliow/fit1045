@@ -1,6 +1,9 @@
 #include "splashkit.h"
 #include "utilities.h"
 
+// ptr:     address
+// *ptr:    value in address
+
 /**
  * An account value storing the name and balance of an account.
  *
@@ -30,13 +33,20 @@ int main()
 
     // TODO: Create a new account on the heap
     account *ptr;
-    ptr = new account();
+    ptr = new account;
 
     // TODO: Allocate details to the account's fields
+    ptr->name = "My Account";
+    ptr->balance = 154;
 
     // TODO: Print the account using the pointer
+    write_line("Name: " + ptr->name);
+    write_line("Balance: " + to_string(ptr->balance));
 
     // TODO: Print the account using the function
+    print_account(*ptr);
 
     // TODO: Clean up
+    delete ptr;
+    ptr = nullptr;
 }
