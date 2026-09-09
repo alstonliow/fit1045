@@ -2,16 +2,49 @@
 #include "splashkit-arrays.h"
 
 // change DATA_SIZE to changing the number of bar
-const int DATA_SIZE = 30;
+const int DATA_SIZE = 100;
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
+const string WINDOW_TITLE = "Sort Visualiser";
+
+// how long to wait after each step
+const int STEP_DELAY = 10;
+
+// the menu options
+enum sort_option
+{
+    BUBBLE_SORT = 1,
+    INSERTION_SORT = 2,
+    MERGE_SORT = 3,
+    QUIT = 4,
+    INVALID = 0
+};
+
+// change the number user type into the option name
+// if the number is not in the menu, return INVALID
+sort_option to_sort_option(int value)
+{
+    switch (value)
+    {
+    case BUBBLE_SORT:
+        return BUBBLE_SORT;
+    case INSERTION_SORT:
+        return INSERTION_SORT;
+    case MERGE_SORT:
+        return MERGE_SORT;
+    case QUIT:
+        return QUIT;
+    default:
+        return INVALID;
+    }
+}
 
 // fill array random
 void fill_array(fixed_array<int, DATA_SIZE> &data)
 {
-    for (int i = 0; i < DATA_SIZE; i++)
+    for (int i = 0; i < length(data); i++)
     {
-        data[i] = rnd(0, screen_height()); // screen height more flexible
+        data[i] = rnd(1, WINDOW_HEIGHT);
     }
 }
 
@@ -25,23 +58,21 @@ color get_bubble_color(int index, int highlight_index1, int highlight_index2)
 }
 
 /**
- * Determine the color of a single bar during a merge step.
+ * Determine the color of a single bar when merging.
  *
- *   COLOR_YELLOW       -> the bar at position i (left pointer, currently being compared)
- *   COLOR_RED          -> the bar at position j (right pointer, currently being compared)
- *   COLOR_AQUA         -> a bar inside the left half [left, mid], not currently pointed to by i
- *   COLOR_PALE_GREEN   -> a bar inside the right half [mid+1, right], not currently pointed to by j
- *   COLOR_WHITE        -> a bar outside the current [left, right] range (already merged, or not yet reached by this recursive call)
+ *   COLOR_YELLOW     -> the bar at i, left pointer comparing now
+ *   COLOR_RED        -> the bar at j, right pointer comparing now
+ *   COLOR_AQUA       -> in the left half [left, mid], but not at i
+ *   COLOR_PALE_GREEN -> in the right half [mid+1, right], but not at j
+ *   COLOR_WHITE      -> outside [left, right], this merge does not touch it
  *
- * @param index the bar currently being drawn (0 .. DATA_SIZE-1)
- * @param left  start of the range currently being merged
- * @param mid   the boundary between the left and right halves within
- *              [left, right] (left half is [left, mid], right half
- *              is [mid+1, right])
- * @param right end of the range currently being merged
- * @param i     the left-half pointer used in the merge comparison
- * @param j     the right-half pointer used in the merge comparison
- * @return the color this bar should be drawn with
+ * @param index the bar being drawn now (0 .. DATA_SIZE-1)
+ * @param left  start of the range being merged
+ * @param mid   split point, left half is [left, mid], right half is [mid+1, right]
+ * @param right end of the range being merged
+ * @param i     the left half pointer
+ * @param j     the right half pointer
+ * @return the color to draw this bar with
  */
 color get_merge_color(int index, int left, int mid, int right, int i, int j)
 {
@@ -99,13 +130,13 @@ color get_insert_color(int index, int key_index, int compare_index)
 void visualise_bubble(const fixed_array<int, DATA_SIZE> &data, int highlight_index1, int highlight_index2)
 {
     // Split the window width evenly between the elements.
-    double bar_width = (double)screen_width() / DATA_SIZE;
+    double bar_width = (double)screen_width() / length(data);
 
     clear_screen(COLOR_BLACK);
 
     for (int i = 0; i < length(data); i++)
     {
-        // Scale the value, then find the top-left corner of the bar.
+        // The value is the height, so just find the top-left corner of the bar.
         // Screen y grows downwards, so a taller bar starts higher up.
         double bar_height = (double)data[i];
         double x = i * bar_width; // actually (i+1)-1=i, the width of the pass one
@@ -115,6 +146,10 @@ void visualise_bubble(const fixed_array<int, DATA_SIZE> &data, int highlight_ind
     }
 
     refresh_screen();
+
+    // must call, if not splashkit cannot see the X button click
+    // quit_requested() stay true after that, so main can check it later
+    process_events();
 }
 
 // visualise, draw the bar
@@ -125,7 +160,7 @@ void visualise_merge(const fixed_array<int, DATA_SIZE> &data, int left, int mid,
 
     for (int k = 0; k < length(data); k++)
     {
-        // Scale the value, then find the top-left corner of the bar.
+        // The value is the height, so just find the top-left corner of the bar.
         // Screen y grows downwards, so a taller bar starts higher up.
         double bar_height = (double)data[k];
         double x = k * bar_width;
@@ -135,21 +170,22 @@ void visualise_merge(const fixed_array<int, DATA_SIZE> &data, int left, int mid,
         fill_rectangle(get_merge_color(k, left, mid, right, i, j), x, y, bar_width, bar_height);
     }
 
+    // only draw here, the caller do the delay
     refresh_screen();
-    delay(50);
+    process_events();
 }
 
 // draw all the bar
 void visualise_insert(const fixed_array<int, DATA_SIZE> &data, int key_index, int compare_index)
 {
     // Split the window width evenly between the elements.
-    double bar_width = (double)screen_width() / DATA_SIZE;
+    double bar_width = (double)screen_width() / length(data);
 
     clear_screen(COLOR_BLACK);
 
-    for (int i = 0; i < DATA_SIZE; i++)
+    for (int i = 0; i < length(data); i++)
     {
-        // Scale the value, then find the top-left corner of the bar.
+        // The value is the height, so just find the top-left corner of the bar.
         // Screen y grows downwards, so a taller bar starts higher up.
         double bar_height = (double)data[i];
         double x = i * bar_width; // actually (i+1)-1=i, the width of the pass one
@@ -160,19 +196,26 @@ void visualise_insert(const fixed_array<int, DATA_SIZE> &data, int key_index, in
     }
 
     refresh_screen();
+    process_events();
 }
 
-/**
- * Perform a single bubble sort pass over the first `range` elements,
- * swapping each out-of-order neighbouring pair. This bubbles the largest
- * value in that range to position range - 1. The array is redrawn after
- * every comparison so the sort can be watched as it happens.
- */
+// bubble sort one time, biggest one move to the end
 void bubble_sort_pass(fixed_array<int, DATA_SIZE> &data, int range)
 {
     // swap of i and i+1, so need (range - 1)
     for (int i = 0; i < range - 1; i++)
     {
+        // user click the X, stop the sort now
+        if (quit_requested())
+        {
+            return;
+        }
+
+        // here giving get_bubble_color() index1 and index2
+        // draw before swap, so can see which pair is comparing
+        visualise_bubble(data, i, i + 1);
+        delay(STEP_DELAY); // slow things down so the change is visible
+
         // Out of order? Swap the pair using a temporary variable.
         if (data[i] > data[i + 1])
         {
@@ -180,10 +223,10 @@ void bubble_sort_pass(fixed_array<int, DATA_SIZE> &data, int range)
             data[i] = data[i + 1];
             data[i + 1] = temp;
         }
-        // here giving get_bubble_color() index1 and index2
-        // when swap i and i + 1, highlight two bar
+
+        // draw after swap, so can see the result
         visualise_bubble(data, i, i + 1);
-        delay(100); // slow things down so the change is visible
+        delay(STEP_DELAY);
     }
 }
 
@@ -193,7 +236,7 @@ void insertion_pass(fixed_array<int, DATA_SIZE> &data, int key_pos)
     int key = data[key_pos]; // current key
     int i = key_pos - 1;     // last position of sorted data
 
-    while (i >= 0 && data[i] > key)
+    while (i >= 0 && data[i] > key && !quit_requested())
     {
         // all element before the key compare with key
         // if element > key, then move right
@@ -202,27 +245,37 @@ void insertion_pass(fixed_array<int, DATA_SIZE> &data, int key_pos)
 
         // visualise with highlight
         visualise_insert(data, key_pos, i);
-        delay(50);
+        delay(STEP_DELAY);
     }
 
+    // key go to its position, draw it also, if not this step cannot see
     data[i + 1] = key;
+    visualise_insert(data, i + 1, -1);
+    delay(STEP_DELAY);
 }
 
 /**
- * Merge two already-sorted halves [left, mid] and [mid+1, right]
- * back into a single sorted range [left, right], using two pointers
- * (i, j) to pick the smaller candidate at each step.
+ * Merge the two sorted halves [left, mid] and [mid+1, right] back into
+ * one sorted range [left, right]. Two pointers (i, j) take the smaller
+ * one each time.
  *
- * A final visualise call with -1 indices clears the highlight once
- * this range is fully merged.
+ * The last visualise with -1 is to clear the highlight after this range
+ * is done.
  *
- * @param data  the array being sorted (modified in place)
+ * @param data  the array to sort, changed in place
  * @param left  start of the range being merged
- * @param mid   boundary between the two halves
+ * @param mid   split point between the two halves
  * @param right end of the range being merged
  */
 void merge(fixed_array<int, DATA_SIZE> &data, int left, int mid, int right)
 {
+    // stop before start, if quit in the middle the temp is not complete
+    // and copy back will break the array
+    if (quit_requested())
+    {
+        return;
+    }
+
     dynamic_array<int> temp;
     int i = left;
     int j = mid + 1;
@@ -240,6 +293,7 @@ void merge(fixed_array<int, DATA_SIZE> &data, int left, int mid, int right)
             j++;
         }
         visualise_merge(data, left, mid, right, i, j);
+        delay(STEP_DELAY);
     }
     // remaining value in i group
     while (i <= mid)
@@ -247,6 +301,7 @@ void merge(fixed_array<int, DATA_SIZE> &data, int left, int mid, int right)
         add(temp, data[i]);
         i++;
         visualise_merge(data, left, mid, right, i, j);
+        delay(STEP_DELAY);
     }
     // remaining value in j group
     while (j <= right)
@@ -254,23 +309,22 @@ void merge(fixed_array<int, DATA_SIZE> &data, int left, int mid, int right)
         add(temp, data[j]);
         j++;
         visualise_merge(data, left, mid, right, i, j);
+        delay(STEP_DELAY);
     }
     for (int k = 0; k < length(temp); k++)
     {
         data[left + k] = temp[k];
     }
     visualise_merge(data, left, mid, right, i, j);
+    delay(STEP_DELAY);
     visualise_merge(data, -1, -1, -1, -1, -1);
+    delay(STEP_DELAY);
 }
 
-/**
- * Sort the array into ascending order using bubble sort.
- * Each pass covers one fewer element, since every pass locks the largest
- * remaining value into place at the end of the range.
- */
+// full bubble sort, every pass one less element to check
 void bubble_sort(fixed_array<int, DATA_SIZE> &data)
 {
-    for (int i = length(data); i > 1; i--)
+    for (int i = length(data); i > 1 && !quit_requested(); i--)
     {
         bubble_sort_pass(data, i);
     }
@@ -279,23 +333,25 @@ void bubble_sort(fixed_array<int, DATA_SIZE> &data)
 // full insertion sort
 void insertion_sort(fixed_array<int, DATA_SIZE> &data)
 {
-    for (int j = 1; j <= DATA_SIZE - 1; j++)
+    for (int j = 1; j < length(data) && !quit_requested(); j++)
     {
         insertion_pass(data, j);
     }
 }
 
 /**
- * Recursively sort data[left..right] using merge sort: split at
- * the midpoint, sort each half, then merge them.
+ * Sort data[left..right] with merge sort: split at the middle,
+ * sort the two halves by recursion, then merge them.
  *
- * @param data  the array being sorted (modified in place)
+ * @param data  the array to sort, changed in place
  * @param left  start index of the range to sort
  * @param right end index of the range to sort
  */
 void merge_sort(fixed_array<int, DATA_SIZE> &data, int left, int right)
 {
-    if (left >= right)
+    // left >= right means only one element, already sorted
+    // quit_requested() means user click the X, stop the recursion
+    if (left >= right || quit_requested())
     {
         return;
     }
@@ -309,51 +365,74 @@ void merge_sort(fixed_array<int, DATA_SIZE> &data, int left, int right)
 // overload, for calling
 void merge_sort(fixed_array<int, DATA_SIZE> &data)
 {
-    merge_sort(data, 0, DATA_SIZE - 1);
+    merge_sort(data, 0, length(data) - 1);
+}
+
+// print the menu
+void write_menu()
+{
+    write_line("1: Bubble Sort");
+    write_line("2: Insertion Sort");
+    write_line("3: Merge Sort");
+    write_line("4: Quit");
+    write("Enter your option: ");
+}
+
+// fill new random value, then sort with the algorithm user chose
+void run_sort(sort_option option, fixed_array<int, DATA_SIZE> &data)
+{
+    fill_array(data);
+
+    switch (option)
+    {
+    case BUBBLE_SORT:
+        bubble_sort(data);
+        break;
+    case INSERTION_SORT:
+        insertion_sort(data);
+        break;
+    case MERGE_SORT:
+        merge_sort(data);
+        break;
+    case QUIT:
+    case INVALID:
+        break; // main already handle these, nothing to sort
+    }
 }
 
 int main()
 {
     fixed_array<int, DATA_SIZE> data;
-    int option = 0;
+    sort_option option = INVALID;
 
-    while (!quit_requested() && option != 4)
+    // ask the option first, no window before user choose
+    while (option != QUIT && !quit_requested())
     {
-        process_events();
+        write_menu();
+        option = to_sort_option(to_integer(read_line()));
 
-        write_line("1: Bubble Sort");
-        write_line("2: Insertion Sort");
-        write_line("3: Merge Sort");
-        write_line("4: Quit");
-        write("Enter your option: ");
-        option = to_integer(read_line());
-
-        switch (option)
+        if (option == INVALID)
         {
-        case 1:
-            open_window("Bubble sort", WINDOW_WIDTH, WINDOW_HEIGHT);
-            fill_array(data);
-            bubble_sort(data);
-            delay(100);
-            break;
-        case 2:
-            open_window("Insertion sort", WINDOW_WIDTH, WINDOW_HEIGHT);
-            fill_array(data);
-            insertion_sort(data);
-            delay(100);
-            break;
-        case 3:
-            open_window("Merge sort", WINDOW_WIDTH, WINDOW_HEIGHT);
-            fill_array(data);
-            merge_sort(data);
-            delay(100);
-            break;
-        case 4:
-            break;
-        default:
             write_line("Invalid option, please try again.");
-            break;
+        }
+        else if (option != QUIT)
+        {
+            open_window(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
+            process_events();
+
+            run_sort(option, data);
+
+            // sort finish, keep the window so the result can be seen
+            // -1 is not a real index, so no bar get highlighted
+            while (!quit_requested() && !any_key_pressed())
+            {
+                visualise_bubble(data, -1, -1);
+                delay(STEP_DELAY);
+            }
+
+            close_window(WINDOW_TITLE);
         }
     }
+
     return 0;
 }
