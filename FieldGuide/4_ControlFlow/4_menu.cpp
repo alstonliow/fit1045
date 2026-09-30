@@ -47,3 +47,15 @@ int main()
         }
     } while (choice != 5);
 }
+
+// function
+int sum(int a, int b)
+{
+    return a + b;
+}
+
+// procedure
+void print(string prompt)
+{
+    write_line(prompt);
+}

@@ -2,7 +2,7 @@
 #include "splashkit-arrays.h"
 
 // change DATA_SIZE to changing the number of bar
-const int DATA_SIZE = 100;
+const int DATA_SIZE = 500;
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
 const string WINDOW_TITLE = "Sort Visualiser";
@@ -42,7 +42,7 @@ sort_option to_sort_option(int value)
 // fill array random
 void fill_array(fixed_array<int, DATA_SIZE> &data)
 {
-    for (int i = 0; i < length(data); i++)
+    for (int i = 0; i < length(data); i++) // from i=0 to i=DATA_SIZE-1
     {
         data[i] = rnd(1, WINDOW_HEIGHT);
     }
@@ -428,6 +428,10 @@ int main()
             {
                 visualise_bubble(data, -1, -1);
                 delay(STEP_DELAY);
+            }
+            for (int i = 0; i < length(data); i++)
+            {
+                write_line(data[i]);
             }
 
             close_window(WINDOW_TITLE);

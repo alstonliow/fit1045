@@ -37,7 +37,7 @@ struct game_data
 {
     dynamic_array<rock_data> rocks;
     player_data player;
-    int score;
+    int score = 0;
     int lives = 3;
     bitmap background;
 };
