@@ -23,6 +23,7 @@ enum main_menu_option
 {
     EXIT_MAIN_MENU,
     ADD_CHEESE_MENU,
+    EDIT_CHEESE_MENU,
     PRINT_STOCK_LIST_MENU
 };
 
@@ -34,15 +35,27 @@ void print_cheese(const cheese_data &cheese, bool with_full)
 /**
  * Read the cheese data from user and return
  *
- *@return the cheese data
+ * @return the cheese data
  */
 cheese_data read_cheese()
 {
     cheese_data cheese;
+    string error_message;
+    bool valid;
 
-    cheese.name = read_string("Enter a cheese name: ");
-    cheese.weight = read_double("Enter weight in stock (kg): ");
-    cheese.price = read_integer("Enter the price per kg (cents): ");
+    do
+    {
+        cheese.name = read_string("Enter a cheese name: ");
+        cheese.weight = read_double("Enter weight in stock (kg): ");
+        cheese.price = read_integer("Enter the price per kg (cents): ");
+
+        valid = cheese_valid(cheese, error_message);
+
+        if (!valid)
+        {
+            write_line(error_message);
+        }
+    } while (!valid);
 
     return cheese;
 }
@@ -65,11 +78,24 @@ void handle_add_cheese(shop_data &shop)
  */
 main_menu_option read_main_menu_option()
 {
-    write_line("0. EXIT_MAIN_MENU");
-    write_line("1. ADD_CHEESE_MENU cheese");
-    write_line("2. Print cheese list");
+    write_line("0. Exit main menu");
+    write_line("1. Add cheese");
+    write_line("2. Edit cheese");
+    write_line("3. Print cheese list");
 
-    return (main_menu_option)read_integer("Select an option (0-2): ", 0, 2);
+    return (main_menu_option)read_integer("Select an option (0-3): ", 0, 3);
+}
+
+void print_cheese_list(const dynamic_array<cheese_data> &cheeses, bool with_ids)
+{
+    for (int i = 0; i < cheeses.length(); i++)
+    {
+        if (with_ids)
+        {
+            write(format("{}: ", i + 1));
+        }
+        print_cheese(cheeses[i], true);
+    }
 }
 
 /**
@@ -90,13 +116,66 @@ void print_stock_list(const shop_data &shop)
     write_line("Cheese stock list: ");
     write_line("==============================");
 
-    for (int i = 0; i < shop.cheeses.length(); i++)
-    {
-        print_cheese(shop.cheeses[i], true);
-    }
+    print_cheese_list(shop.cheeses, true);
 
     write_line("==============================");
     write_line();
+}
+
+int select_cheese(const dynamic_array<cheese_data> &cheeses)
+{
+    if (cheeses.length() == 0)
+    {
+        write_line("No cheese in stock.");
+        return -1;
+    }
+
+    write_line("0: Select none");
+    print_cheese_list(cheeses, false);
+
+    return read_integer("Select cheese: ", 0, cheeses.length()) - 1;
+}
+
+/**
+ * Allow user to edit the cheese
+ *
+ * @param cheese a reference of cheese to be updated
+ */
+void edit_cheese(cheese_data &cheese)
+{
+    write_line("Editing cheese: " + cheese_to_string(cheese, true));
+
+    if (read_integer("Edit the name? (1 for yes, 0 for no): ", 0, 1) == 1)
+    {
+        cheese.name = read_string("Enter new cheese name: ");
+    }
+
+    if (read_integer("Edit the weight? (1 for yes, 0 for no): ", 0, 1) == 1)
+    {
+        cheese.weight = read_double("Enter new weight in stock (kg): ");
+    }
+
+    if (read_integer("Edit the price? (1 for yes, 0 for no): ", 0, 1) == 1)
+    {
+        cheese.price = read_integer("Enter new price per kg (cents): ");
+    }
+}
+
+/**
+ * Perform the steps to allow the user to edit a cheese in the shop.
+ *
+ * @param shop the shop with the cheese to be edited
+ */
+void handle_edit_cheese(shop_data &shop)
+{
+    int index = select_cheese(shop.cheeses);
+
+    if (index == -1)
+    {
+        return;
+    }
+
+    edit_cheese(shop.cheeses[index]);
 }
 
 int main()
@@ -111,10 +190,13 @@ int main()
         switch (choice)
         {
         case EXIT_MAIN_MENU:
-            write_line("EXIT_MAIN_MENUing......");
+            write_line("Exiting......");
             break;
         case ADD_CHEESE_MENU:
             handle_add_cheese(shop);
+            break;
+        case EDIT_CHEESE_MENU:
+            handle_edit_cheese(shop);
             break;
         case PRINT_STOCK_LIST_MENU:
             print_stock_list(shop);

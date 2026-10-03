@@ -74,19 +74,19 @@ void increase_weight(cheese_data &cheese, double amount);
 
 /**
  * adds the cheese to the end of our dynamic array
- * 
+ *
  * @param shop The array
  * @param new_cheese The cheese data to add
  */
 void add_cheese(shop_data &shop, const cheese_data &new_cheese);
 
 /**
- * Return false when name is emtpy or price/weight is negative
+ * Return false when name is empty or price/weight is negative
  * print error message when false
- * 
- * @param cheese 
+ *
+ * @param cheese cheese data
  * @param error_message error message to print
- * @return ture or false
+ * @return true if the cheese is valid, otherwise false
  */
 bool cheese_valid(const cheese_data &cheese, string &error_message);
 

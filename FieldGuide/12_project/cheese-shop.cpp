@@ -65,3 +65,41 @@ void add_cheese(shop_data &shop, const cheese_data &new_cheese)
 {
     shop.cheeses.add(new_cheese);
 }
+
+bool cheese_valid(const cheese_data &cheese, string &error_message)
+{
+    bool valid = true;
+    error_message = "";
+
+    if (cheese.name == "")
+    {
+        error_message = "Name is empty";
+        valid = false;
+    }
+    if (cheese.weight < 0)
+    {
+        if (error_message != "")
+        {
+            error_message += ", Weight cannot be negative";
+        }
+        else
+        {
+            error_message = "Weight cannot be negative";
+        }
+        valid = false;
+    }
+    if (cheese.price < 0)
+    {
+        if (error_message != "")
+        {
+            error_message += ", Price cannot be negative";
+        }
+        else
+        {
+            error_message = "Price cannot be negative";
+        }
+        valid = false;
+    }
+
+    return valid;
+}
