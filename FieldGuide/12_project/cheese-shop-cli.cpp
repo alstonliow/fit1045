@@ -24,6 +24,7 @@ enum main_menu_option
     EXIT_MAIN_MENU,
     ADD_CHEESE_MENU,
     EDIT_CHEESE_MENU,
+    DELETE_CHEESE_MENU,
     PRINT_STOCK_LIST_MENU
 };
 
@@ -81,9 +82,10 @@ main_menu_option read_main_menu_option()
     write_line("0. Exit main menu");
     write_line("1. Add cheese");
     write_line("2. Edit cheese");
-    write_line("3. Print cheese list");
+    write_line("3. Delete cheese");
+    write_line("4. Print cheese list");
 
-    return (main_menu_option)read_integer("Select an option (0-3): ", 0, 3);
+    return (main_menu_option)read_integer("Select an option (0-4): ", 0, 4);
 }
 
 void print_cheese_list(const dynamic_array<cheese_data> &cheeses, bool with_ids)
@@ -178,6 +180,23 @@ void handle_edit_cheese(shop_data &shop)
     edit_cheese(shop.cheeses[index]);
 }
 
+/**
+ * Perform the steps to allow the user to delete a cheese from the shop.
+ *
+ * @param shop the shop with the cheese to be deleted
+ */
+void handle_delete_cheese(shop_data &shop)
+{
+    int index = select_cheese(shop.cheeses);
+
+    if (index == -1)
+    {
+        return;
+    }
+
+    delete_cheese(shop, index);
+}
+
 int main()
 {
     shop_data shop;
@@ -197,6 +216,9 @@ int main()
             break;
         case EDIT_CHEESE_MENU:
             handle_edit_cheese(shop);
+            break;
+        case DELETE_CHEESE_MENU:
+            handle_delete_cheese(shop);
             break;
         case PRINT_STOCK_LIST_MENU:
             print_stock_list(shop);

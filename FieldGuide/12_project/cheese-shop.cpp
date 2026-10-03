@@ -103,3 +103,13 @@ bool cheese_valid(const cheese_data &cheese, string &error_message)
 
     return valid;
 }
+
+void delete_cheese(shop_data &shop, int index)
+{
+    if (index < 0 || index >= shop.cheeses.length())
+    {
+        return;
+    }
+
+    shop.cheeses.remove(index);
+}

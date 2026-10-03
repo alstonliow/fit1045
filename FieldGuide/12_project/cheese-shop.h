@@ -90,4 +90,12 @@ void add_cheese(shop_data &shop, const cheese_data &new_cheese);
  */
 bool cheese_valid(const cheese_data &cheese, string &error_message);
 
+/**
+ * Delete the cheese fron shop
+ * 
+ * @param shop 
+ * @param index The index of cheese in the shop to be delete
+ */
+void delete_cheese(shop_data &shop, int index);
+
 #endif
