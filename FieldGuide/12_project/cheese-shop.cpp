@@ -113,3 +113,25 @@ void delete_cheese(shop_data &shop, int index)
 
     shop.cheeses.remove(index);
 }
+
+void add_cheese_to_order(order_data &order, const cheese_data &cheese)
+{
+    order.items.add(cheese);
+}
+
+int order_total_cost(const order_data &order)
+{
+    int total = 0;
+
+    for (int i = 0; i < order.items.length(); i++)
+    {
+        total += total_cost(order.items[i]);
+    }
+
+    return total;
+}
+
+void add_order(shop_data &shop, const order_data &order)
+{
+    shop.orders.add(order);
+}

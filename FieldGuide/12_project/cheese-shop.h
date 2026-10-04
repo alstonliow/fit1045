@@ -19,13 +19,23 @@ struct cheese_data
 };
 
 /**
+ * The order data about cheese_data
+ */
+struct order_data
+{
+    dynamic_array<cheese_data> items;
+};
+
+/**
  * Data about the cheese shop
  *
  * @field cheese The list of cheese in shop
+ * @field oders The list of order in the shop
  */
 struct shop_data
 {
     dynamic_array<cheese_data> cheeses;
+    dynamic_array<order_data> orders;
 };
 
 /**
@@ -92,10 +102,34 @@ bool cheese_valid(const cheese_data &cheese, string &error_message);
 
 /**
  * Delete the cheese fron shop
- * 
- * @param shop 
+ *
+ * @param shop
  * @param index The index of cheese in the shop to be delete
  */
 void delete_cheese(shop_data &shop, int index);
+
+/**
+ * Add a cheese to the end of an order's item list.
+ *
+ * @param order The order to add the cheese to.
+ * @param cheese The cheese to add. Its weight is the ordered weight (kg).
+ */
+void add_cheese_to_order(order_data &order, const cheese_data &cheese);
+
+/**
+ * Calculate the total cost of all items in an order.
+ *
+ * @param order The order to calculate the cost of.
+ * @return int The total cost in cents.
+ */
+int order_total_cost(const order_data &order);
+
+/**
+ * Add an order to the end of the shop's order list.
+ *
+ * @param shop The shop to add the order to.
+ * @param order The order to add.
+ */
+void add_order(shop_data &shop, const order_data &order);
 
 #endif
