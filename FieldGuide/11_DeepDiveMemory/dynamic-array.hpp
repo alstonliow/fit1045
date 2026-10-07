@@ -10,6 +10,11 @@ class allocation_failed
 {
 };
 
+// Thrown when an index is outside [0, size)
+class index_out_of_range
+{
+};
+
 template <typename T>
 class dynamic_array
 {
@@ -51,6 +56,12 @@ public:
         return size;
     }
 
+    // Number of slots allocated, including unconstructed ones
+    int get_capacity() const
+    {
+        return capacity;
+    }
+
     // Doubles capacity: allocates new raw memory, moves existing
     // elements across via placement new, destructs the old ones,
     // then frees the old block.
@@ -86,9 +97,14 @@ public:
     }
 
     // Destructs the removed element, then shifts later elements down
-    // Note: no bounds check - index must be in [0, size)
+    // Throws index_out_of_range if index is not in [0, size)
     void remove(int index)
     {
+        if (index < 0 || index >= size)
+        {
+            throw index_out_of_range();
+        }
+
         data[index].~T();
 
         for (int i = index + 1; i < size; i++)
@@ -100,14 +116,22 @@ public:
         // capacity is intentionally left unchanged
     }
 
-    // Note: no bounds check - caller must ensure index < size
+    // Throws index_out_of_range if index is not in [0, size)
     T &get(int index)
     {
+        if (index < 0 || index >= size)
+        {
+            throw index_out_of_range();
+        }
         return data[index];
     }
 
     const T &get(int index) const
     {
+        if (index < 0 || index >= size)
+        {
+            throw index_out_of_range();
+        }
         return data[index];
     }
 

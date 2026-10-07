@@ -1,137 +1,211 @@
 #include "splashkit.h"
 #include "list.hpp"
+#include <cassert>
 
-/**
- * Print one value followed by a space, for use with visit
- *
- * @param data the value to print
- */
-void print_data(int &data)
+// Builds a string of all elements, e.g. "2 4 8 "
+string contents(linked_list<int> &list)
 {
-    write(data);
-    write(" ");
+    return list.fold(string(""), [](string acc, const int &d)
+                     { return acc + to_string(d) + " "; });
 }
 
-/**
- * Print every value in the list on one line
- *
- * @param list the list to print
- */
-template <typename T>
-void print_list(linked_list<T> &list)
+void test_constructor()
 {
-    write("[ ");
-    list.visit(print_data);
-    write_line("]");
+    linked_list<int> list;
+    assert(list.first == nullptr);
+    assert(list.last == nullptr);
+    assert(contents(list) == ""); // empty list has no elements
+}
+
+void test_add_node()
+{
+    linked_list<int> list;
+
+    node<int> *a = list.add_node(2); // first node
+    assert(list.first == a);
+    assert(list.last == a);
+    assert(a->data == 2);
+    assert(a->next == nullptr);
+
+    node<int> *b = list.add_node(4);
+    node<int> *c = list.add_node(8);
+    assert(contents(list) == "2 4 8 "); // added in order
+    assert(list.first == a);            // first unchanged
+    assert(list.last == c);             // last updated
+    assert(c->next == nullptr);         // tail points to nothing
+    assert(b->data == 4);
+}
+
+void test_find_previous_node()
+{
+    linked_list<int> list;
+    node<int> *a = list.add_node(2);
+    node<int> *b = list.add_node(4);
+    node<int> *c = list.add_node(8);
+
+    assert(list.find_previous_node(a) == nullptr); // head has no previous
+    assert(list.find_previous_node(b) == a);       // middle
+    assert(list.find_previous_node(c) == b);       // tail
+}
+
+void test_insert()
+{
+    linked_list<int> list;
+    node<int> *a = list.add_node(2);
+    node<int> *b = list.add_node(4);
+
+    node<int> *five = new node<int>(); // insert in the middle
+    five->data = 5;
+    five->next = nullptr;
+    list.insert(five, a);
+    assert(contents(list) == "2 5 4 ");
+    assert(a->next == five);
+    assert(five->next == b);
+
+    node<int> *nine = new node<int>(); // insert after the tail
+    nine->data = 9;
+    nine->next = nullptr;
+    list.insert(nine, b);
+    assert(contents(list) == "2 5 4 9 ");
+    assert(list.last == nine); // last is updated
+}
+
+void test_remove()
+{
+    linked_list<int> list;
+    node<int> *a = list.add_node(2);
+    node<int> *b = list.add_node(4);
+    node<int> *c = list.add_node(8);
+    node<int> *d = list.add_node(16);
+
+    list.remove(b); // middle
+    assert(contents(list) == "2 8 16 ");
+    assert(a->next == c);
+
+    list.remove(d); // last
+    assert(contents(list) == "2 8 ");
+    assert(list.last == c);
+    assert(c->next == nullptr);
+
+    list.remove(a); // first
+    assert(contents(list) == "8 ");
+    assert(list.first == c);
+
+    list.remove(c); // only node left
+    assert(list.first == nullptr);
+    assert(list.last == nullptr);
+    assert(contents(list) == "");
+}
+
+void test_visit()
+{
+    linked_list<int> list;
+    list.add_node(4);
+    list.add_node(6);
+
+    list.visit([](int &d)
+               { d *= 10; });
+    assert(contents(list) == "40 60 "); // every element modified
+
+    linked_list<int> empty;
+    empty.visit([](int &d)
+                { d = 99; });
+    assert(contents(empty) == ""); // visiting an empty list does nothing
+}
+
+void test_fold()
+{
+    linked_list<int> list;
+    list.add_node(40);
+    list.add_node(60);
+
+    assert(list.fold(0, [](int acc, const int &d)
+                     { return acc + d; }) == 100); // sum
+    assert(list.fold(true, [](bool acc, const int &d)
+                     { return acc && d > 50; }) == false); // all > 50
+    assert(list.fold(true, [](bool acc, const int &d)
+                     { return acc && d > 10; }) == true); // all > 10
+
+    linked_list<int> empty;
+    assert(empty.fold(7, [](int acc, const int &d)
+                      { return acc + d; }) == 7); // empty list returns the initial value
+}
+
+void test_clear()
+{
+    linked_list<int> list;
+    list.add_node(1);
+    list.add_node(2);
+    list.add_node(3);
+
+    list.clear();
+    assert(list.first == nullptr);
+    assert(list.last == nullptr);
+    assert(contents(list) == "");
+
+    list.add_node(5); // list is still usable after clear
+    assert(contents(list) == "5 ");
+
+    linked_list<int> empty;
+    empty.clear(); // clearing an empty list is safe
+    assert(empty.first == nullptr);
+}
+
+void test_find_previous_node_not_found()
+{
+    linked_list<int> list;
+    list.add_node(2);
+
+    node<int> stray; // not in the list
+    stray.data = 0;
+    stray.next = nullptr;
+
+    try
+    {
+        list.find_previous_node(&stray);
+        assert(false);
+    }
+    catch (...)
+    {
+        assert(true);
+    }
+}
+
+void test_remove_not_found()
+{
+    linked_list<int> list;
+    list.add_node(2);
+    list.add_node(4);
+
+    node<int> stray; // not in the list
+    stray.data = 0;
+    stray.next = nullptr;
+
+    try
+    {
+        list.remove(&stray);
+        assert(false);
+    }
+    catch (...)
+    {
+        assert(true);
+    }
+
+    assert(contents(list) == "2 4 "); // list is intact after the exception
 }
 
 int main()
 {
-    linked_list<int> list;
+    test_constructor();
+    test_add_node();
+    test_find_previous_node();
+    test_insert();
+    test_remove();
+    test_visit();
+    test_fold();
+    test_clear();
+    test_find_previous_node_not_found();
+    test_remove_not_found();
 
-    // ---- Test first node ----
-    node<int> *first_node = list.add_node(2);
-
-    write("This should be 2: ");
-    write_line(list.first->data);
-
-    write("This should also be 2: ");
-    write_line(first_node->data);
-
-    write("This should also be 2: ");
-    write_line(list.last->data);
-
-    // ---- Test adding more nodes ----
-    list.add_node(4);
-    list.add_node(8);
-    list.add_node(16);
-
-    write("This should be 4: ");
-    write_line(list.first->next->data);
-
-    write("This should be 8: ");
-    write_line(list.first->next->next->data);
-
-    write("This should be 16: ");
-    write_line(list.last->data);
-
-    // ---- Test find_previous_node ----
-    node<int> *node_a = list.add_node(9);
-    node<int> *node_b = list.add_node(18);
-
-    if (list.find_previous_node(node_b) == node_a)
-    {
-        write_line("Found the correct previous node");
-    }
-    else
-    {
-        write_line("Found the wrong previous node");
-    }
-
-    // ---- Test insert ----
-    // insert 5 between 4 and 8
-    node<int> *node_five = new node<int>();
-    node_five->data = 5;
-    node_five->next = nullptr;
-    list.insert(node_five, list.first->next);
-
-    write("After inserting 5, should be [ 2 4 5 8 16 9 18 ]: ");
-    print_list(list);
-
-    // ---- Test remove ----
-    list.remove(node_five);
-    write("After removing 5, should be [ 2 4 8 16 9 18 ]: ");
-    print_list(list);
-
-    // ---- Test visit with a named function ----
-    write("Visit with print_data, should be [ 2 4 8 16 9 18 ]: ");
-    print_list(list);
-
-    // ---- Test visit with a non-capturing lambda ----
-    write("Multiply all by 10, should be [ 20 40 80 160 90 180 ]: ");
-    list.visit([](int &data)
-               { data *= 10; });
-    print_list(list);
-
-    // ---- Test fold with a named function ----
-    int product_check = list.fold(0, [](int acc, const int &data)
-                                  { return acc + data; });
-    write_line("Sum after multiplying by 10, should be 570: " + to_string(product_check));
-
-    // ---- Test fold checking all positive ----
-    bool all_positive = list.fold(true, [](bool acc, const int &data)
-                                  { return acc && (data > 0); });
-    write_line(all_positive ? "All Positive" : "Not All Positive");
-
-    // ---- Test visit with a capturing lambda ----
-    // list is [ 20 40 80 160 90 180 ] at this point
-    int total_sum = 0;
-    list.visit([&total_sum](int &data)
-               { total_sum += data; });
-    write_line("Sum via capturing visit, should be 570: " + to_string(total_sum));
-
-    // ---- Test fold reusing a captured multiplier ----
-    int multiplier = 3;
-    int scaled_sum = list.fold(0, [multiplier](int acc, const int &data)
-                               { return acc + data * multiplier; });
-    write_line("Sum of (each element * 3), should be 1710: " + to_string(scaled_sum));
-
-    // ---- Test clear ----
-    list.clear();
-    write("After clear, should be [ ]: ");
-    print_list(list);
-
-    if (list.first == nullptr && list.last == nullptr)
-    {
-        write_line("first and last correctly reset to nullptr");
-    }
-    else
-    {
-        write_line("first/last not properly reset");
-    }
-
-    // ---- Test fold on an empty list gives back the initial value ----
-    int empty_sum = list.fold(0, [](int acc, const int &data)
-                              { return acc + data; });
-    write_line("Sum of the empty list, should be 0: " + to_string(empty_sum));
+    write_line("ALL PASSED");
 }

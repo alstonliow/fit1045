@@ -61,9 +61,9 @@ public:
 
 int main()
 {
-    user u{};
+    user u;
 
-    int option{};
+    int option;
 
     while (option != 4)
     {
