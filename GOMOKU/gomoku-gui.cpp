@@ -5,6 +5,7 @@
 #include "layout.h"
 #include "renderer.h"
 #include "control_panel.h"
+#include "result_overlay.h"
 
 /**
  * Places a stone if the player clicked inside the board area.
@@ -115,12 +116,14 @@ int main()
 
     app_window win = open_app_window("Gomoku", 1000, 700, 640, 420);
     setup_panel_style();
+    result_overlay overlay = new_result_overlay();
 
     while (!quit_requested() && !window_close_requested(win.wnd))
     {
         process_events();
         sync_window_size(win);
         handle_shortcuts(win, state);
+        update_result_overlay(overlay, game);
 
         int width = window_width(win.wnd);
         int height = window_height(win.wnd);
@@ -135,11 +138,16 @@ int main()
 
         clear_screen(rgb_color(37, 37, 38));
         draw_game(game, layout.board_area, geo, state.show_last_move);
+        draw_winning_line(game, geo, overlay.frames);
         draw_layout_chrome(layout, drag);
 
-        panel_action action = panel_action::NONE;
+        panel_action action = draw_result_overlay(overlay, game, layout.board_area, state.mode, computer);
         if (state.sidebar.visible)
-            action = draw_control_panel(game, state, layout.sidebar);
+        {
+            panel_action side_action = draw_control_panel(game, state, layout.sidebar);
+            if (side_action != panel_action::NONE)
+                action = side_action;
+        }
         draw_activity_bar(state, layout.activity_bar);
         draw_interface();
         refresh_window(win.wnd, 60);

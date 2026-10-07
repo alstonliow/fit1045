@@ -19,7 +19,7 @@ bool is_board_full(const board &b)
     return true;
 }
 
-bool check_win(const board &b, int row, int col)
+bool winning_line(const board &b, int row, int col, int &start_row, int &start_col, int &end_row, int &end_col)
 {
     cell c = b.cell_at(row, col);
     if (c == cell::EMPTY)
@@ -32,9 +32,23 @@ bool check_win(const board &b, int row, int col)
     for (int i = 0; i < 4; i++)
     {
         direction d = LINES[i];
-        int total = 1 + b.run_length(row, col, d, c) + b.run_length(row, col, opposite(d), c);
-        if (total >= WIN_LENGTH)
+        int ahead = b.run_length(row, col, d, c);
+        int behind = b.run_length(row, col, opposite(d), c);
+
+        if (1 + ahead + behind >= WIN_LENGTH)
+        {
+            start_row = row - behind * step_row(d);
+            start_col = col - behind * step_col(d);
+            end_row = row + ahead * step_row(d);
+            end_col = col + ahead * step_col(d);
             return true;
+        }
     }
     return false;
+}
+
+bool check_win(const board &b, int row, int col)
+{
+    int start_row, start_col, end_row, end_col;
+    return winning_line(b, row, col, start_row, start_col, end_row, end_col);
 }

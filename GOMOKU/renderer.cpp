@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "game_rules.h"
 #include <cmath>
 
 /** Stone radius as a fraction of the grid spacing. */
@@ -138,4 +139,58 @@ bool pixel_to_cell(const board_geometry &geo, double x, double y, int &row, int 
     row = (int)std::lround((y - geo.top) / geo.cell);
 
     return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
+}
+
+/**
+ * Gets the colour of the winning line and its rings.
+ *
+ * @return a warm gold
+ */
+static color win_gold()
+{
+    return rgb_color(232, 183, 64);
+}
+
+/** Frames for one full pulse of the rings. */
+const int PULSE_FRAMES = 40;
+
+void draw_winning_line(const gomoku &game, const board_geometry &geo, int frames)
+{
+    placement last;
+    if (!game.last_placement(last))
+        return;
+
+    int start_row, start_col, end_row, end_col;
+    if (!winning_line(game.get_board(), last.row, last.col, start_row, start_col, end_row, end_col))
+        return;
+
+    // One step along the line: each of dr, dc is -1, 0 or 1.
+    int dr = (end_row > start_row) - (end_row < start_row);
+    int dc = (end_col > start_col) - (end_col < start_col);
+    int steps = (dr != 0) ? (end_row - start_row) * dr : (end_col - start_col) * dc;
+
+    color gold = win_gold();
+
+    // A three-pixel-wide line through the stones.
+    double x1 = col_x(geo, start_col), y1 = row_y(geo, start_row);
+    double x2 = col_x(geo, end_col), y2 = row_y(geo, end_row);
+    for (int k = -1; k <= 1; k++)
+    {
+        draw_line(gold, x1 + k, y1, x2 + k, y2);
+        draw_line(gold, x1, y1 + k, x2, y2 + k);
+    }
+
+    // Rings that grow and shrink: a triangle wave from 0 to 1 and back.
+    int phase = frames % PULSE_FRAMES;
+    int half = PULSE_FRAMES / 2;
+    double wave = (phase < half ? phase : PULSE_FRAMES - phase) / (double)half;
+    double radius = geo.cell * (0.47 + 0.06 * wave);
+
+    for (int i = 0; i <= steps; i++)
+    {
+        double x = col_x(geo, start_col + i * dc);
+        double y = row_y(geo, start_row + i * dr);
+        for (int k = 0; k < 3; k++)
+            draw_circle(gold, x, y, radius + k);
+    }
 }

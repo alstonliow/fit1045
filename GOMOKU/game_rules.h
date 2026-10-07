@@ -39,4 +39,18 @@ bool is_board_full(const board &b);
  */
 bool check_win(const board &b, int row, int col);
 
+/**
+ * Finds the line of WIN_LENGTH or more stones through a position.
+ *
+ * @param b         the board to check
+ * @param row       the row of a stone, must be in bounds
+ * @param col       the column of that stone, must be in bounds
+ * @param start_row set to the row at one end of the line
+ * @param start_col set to the column at that end
+ * @param end_row   set to the row at the other end
+ * @param end_col   set to the column at that end
+ * @return true if the stone is part of a winning line, otherwise false
+ */
+bool winning_line(const board &b, int row, int col, int &start_row, int &start_col, int &end_row, int &end_col);
+
 #endif

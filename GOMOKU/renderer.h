@@ -45,4 +45,14 @@ void draw_game(const gomoku &game, const rectangle &area, const board_geometry &
  */
 bool pixel_to_cell(const board_geometry &geo, double x, double y, int &row, int &col);
 
+/**
+ * Draws a gold line through the winning stones, with pulsing rings.
+ * Draws nothing unless the last move won the game.
+ *
+ * @param game   the game being shown
+ * @param geo    where the grid is drawn
+ * @param frames frames since the game ended, drives the pulse
+ */
+void draw_winning_line(const gomoku &game, const board_geometry &geo, int frames);
+
 #endif
