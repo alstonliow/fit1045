@@ -32,6 +32,22 @@ const int DIRECTION_COUNT = 8;
 direction opposite(direction d);
 
 /**
+ * Gets the row change for one step in a direction.
+ *
+ * @param d the direction
+ * @return -1, 0 or 1
+ */
+int step_row(direction d);
+
+/**
+ * Gets the column change for one step in a direction.
+ *
+ * @param d the direction
+ * @return -1, 0 or 1
+ */
+int step_col(direction d);
+
+/**
  * One square of the board, linked to its up to eight neighbours.
  * A neighbour pointer is nullptr where the square is on the edge.
  */

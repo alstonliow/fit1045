@@ -11,6 +11,16 @@ direction opposite(direction d)
     return (direction)(((int)d + DIRECTION_COUNT / 2) % DIRECTION_COUNT);
 }
 
+int step_row(direction d)
+{
+    return DR[(int)d];
+}
+
+int step_col(direction d)
+{
+    return DC[(int)d];
+}
+
 board::board()
 {
     for (int r = 0; r < BOARD_SIZE; r++)

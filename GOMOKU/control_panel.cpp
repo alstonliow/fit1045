@@ -63,7 +63,7 @@ static string status_text(const gomoku &game)
  */
 static bool mode_available(game_mode mode)
 {
-    return mode == game_mode::PVP;
+    return mode == game_mode::PVP || mode == game_mode::PVC;
 }
 
 /**

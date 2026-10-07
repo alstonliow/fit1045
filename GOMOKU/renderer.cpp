@@ -38,9 +38,9 @@ board_geometry fit_board(const rectangle &area)
 {
     // BOARD_SIZE - 1 gaps between lines, plus one cell of margin each side
     // for the labels.
-    double side = std::min(area.width, area.height);
+    double short_side = std::min(area.width, area.height);
     board_geometry geo;
-    geo.cell = std::floor(side / (BOARD_SIZE + 1));
+    geo.cell = std::floor(short_side / (BOARD_SIZE + 1));
 
     double grid = geo.cell * (BOARD_SIZE - 1);
     geo.left = std::floor(area.x + (area.width - grid) / 2);

@@ -79,7 +79,7 @@ placement gomoku::placement_at(int index) const
         current = current->next;
 
     if (index < 0 || current == nullptr)
-        throw string("placement_at: index " + std::to_string(index) + " is out of range.");
+        throw string("placement_at: index " + to_string(index) + " is out of range.");
     return current->data;
 }
 
