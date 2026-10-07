@@ -1,13 +1,13 @@
 #include "game_rules.h"
 
-cell cell_of(player p)
+cell cell_of(side s)
 {
-    return (p == player::BLACK) ? cell::BLACK : cell::WHITE;
+    return (s == side::BLACK) ? cell::BLACK : cell::WHITE;
 }
 
-player opponent(player p)
+side opponent(side s)
 {
-    return (p == player::BLACK) ? player::WHITE : player::BLACK;
+    return (s == side::BLACK) ? side::WHITE : side::BLACK;
 }
 
 bool is_board_full(const board &b)
@@ -21,7 +21,20 @@ bool is_board_full(const board &b)
 
 bool check_win(const board &b, int row, int col)
 {
-    // TODO：你自己写。提示：沿 4 个方向 (0,1) (1,0) (1,1) (1,-1)，
-    // 从 (row, col) 往正反两边数连续同色格，总数 >= WIN_LENGTH 即胜
+    cell c = b.cell_at(row, col);
+    if (c == cell::EMPTY)
+        return false;
+
+    // Horizontal, diagonal, vertical and anti-diagonal; the other half of
+    // each line is covered by walking the opposite direction.
+    const direction LINES[4] = {direction::E, direction::SE, direction::S, direction::SW};
+
+    for (int i = 0; i < 4; i++)
+    {
+        direction d = LINES[i];
+        int total = 1 + b.run_length(row, col, d, c) + b.run_length(row, col, opposite(d), c);
+        if (total >= WIN_LENGTH)
+            return true;
+    }
     return false;
 }

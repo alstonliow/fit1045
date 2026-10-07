@@ -1,7 +1,7 @@
 #include "gomoku.h"
 #include "game_rules.h"
 
-gomoku::gomoku() : current_(player::BLACK), state_(game_state::PLAYING)
+gomoku::gomoku() : current_(side::BLACK), state_(game_state::PLAYING)
 {
 }
 
@@ -18,10 +18,10 @@ bool gomoku::place(int row, int col)
     p.row = row;
     p.col = col;
     p.owner = current_;
-    add(history_, p);
+    history_.add_node(p);
 
     if (check_win(board_, row, col))
-        state_ = (current_ == player::BLACK) ? game_state::BLACK_WIN : game_state::WHITE_WIN;
+        state_ = (current_ == side::BLACK) ? game_state::BLACK_WIN : game_state::WHITE_WIN;
     else if (is_board_full(board_))
         state_ = game_state::DRAW;
     else
@@ -32,14 +32,13 @@ bool gomoku::place(int row, int col)
 
 bool gomoku::undo()
 {
-    if (is_empty_array(history_))
+    if (history_.last == nullptr)
         return false;
 
-    int last = length(history_) - 1;
-    placement p = history_[last];
+    placement p = history_.last->data;
 
     board_.set_cell(p.row, p.col, cell::EMPTY);
-    remove_at(history_, last);
+    history_.remove(history_.last);
     current_ = p.owner;
     state_ = game_state::PLAYING;
     return true;
@@ -47,10 +46,10 @@ bool gomoku::undo()
 
 void gomoku::reset()
 {
-    board_ = board();
-    current_ = player::BLACK;
+    board_.clear();
+    current_ = side::BLACK;
     state_ = game_state::PLAYING;
-    clear(history_);
+    history_.clear();
 }
 
 const board &gomoku::get_board() const
@@ -58,7 +57,7 @@ const board &gomoku::get_board() const
     return board_;
 }
 
-player gomoku::current_player() const
+side gomoku::current_side() const
 {
     return current_;
 }
@@ -70,5 +69,25 @@ game_state gomoku::get_state() const
 
 int gomoku::placement_count() const
 {
-    return length(history_);
+    return history_.fold(0, [](int count, const placement &) { return count + 1; });
+}
+
+placement gomoku::placement_at(int index) const
+{
+    const node<placement> *current = history_.first;
+    for (int i = 0; i < index && current != nullptr; i++)
+        current = current->next;
+
+    if (index < 0 || current == nullptr)
+        throw string("placement_at: index " + std::to_string(index) + " is out of range.");
+    return current->data;
+}
+
+bool gomoku::last_placement(placement &p) const
+{
+    if (history_.last == nullptr)
+        return false;
+
+    p = history_.last->data;
+    return true;
 }
